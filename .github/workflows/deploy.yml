@@ -3,6 +3,8 @@ name: CI/CD Pipeline //내용 자유
 on:
   push:
     branches: [ develop ]
+  pull_request:  # PR 이벤트 추가
+    branches: [ develop ]  # develop 브랜치로의 PR도 트리거됨
 
 jobs:
   build:
