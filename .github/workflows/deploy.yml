@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline //내용 자유
 
 on:
   push:
