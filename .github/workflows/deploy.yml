@@ -3,6 +3,9 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ develop ]
+  pull_request:
+    branches: [ develop ]  # develop 브랜치로의 PR도 트리거됨
+
 
 jobs:
   build:
