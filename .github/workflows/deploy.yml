@@ -3,8 +3,6 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ develop ]
-  pull_request:  # PR 이벤트 추가
-    branches: [ develop ]  # develop 브랜치로의 PR도 트리거됨
 
 jobs:
   build:
@@ -20,3 +18,48 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Make application-secret.yml
+        run: |
+          touch ./src/main/resources/application-secret.yml
+          echo "${{ secrets.APPLICATION_SECRET }}" > ./src/main/resources/application-secret.yml
+        shell: bash
+
+      - name: Build with Gradle Wrapper
+        run: |
+          ./gradlew --stop && ./gradlew clean --refresh-dependencies
+          ./gradlew clean build
+          ls -l build/libs 
+
+      - name: Deploy JAR to EC2
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ubuntu
+          TARGET_DIR: /home/ubuntu/cicd/
+        run: |
+          echo "$PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+
+          # 빌드된 JAR 파일을 EC2로 전송
+          scp -i private_key.pem -o StrictHostKeyChecking=no build/libs/*.jar $USER@$HOST:$TARGET_DIR
+
+      - name: Run Application on EC2
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ubuntu
+          TARGET_DIR: /home/ubuntu/cicd/
+        run: |
+          echo "$PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+
+          # EC2에서 기존 애플리케이션 종료 후 새 JAR 실행
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST << EOF
+            pkill -f 'java -jar' || echo "No existing app running"
+            nohup java -jar $TARGET_DIR/*.jar > $TARGET_DIR/app.log 2>&1 &
+          EOF
+
