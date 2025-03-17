@@ -33,7 +33,7 @@ jobs:
       - name: Build with Gradle Wrapper (Skip Tests)
         run: |
           ./gradlew --stop && ./gradlew clean --refresh-dependencies
-          ./gradlew clean build -x test # 테스트 제외
+          ./gradlew clean bootJar -x test  
           ls -l build/libs 
 
       - name: Deploy JAR to EC2
@@ -52,9 +52,20 @@ jobs:
           
           # SSH 연결 테스트 (EC2 접속 가능 여부 확인)
           ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST "echo 'SSH Connection Successful'"
+
+          # 가장 최근 빌드된 실행 가능한 JAR 찾기
+          LATEST_JAR=$(ls -t build/libs/*.jar | grep -v 'plain' | head -n 1)
           
-          # 빌드된 JAR 파일을 EC2로 전송 (디버깅용 -v 옵션 추가)
-          scp -v -i private_key.pem -o StrictHostKeyChecking=no build/libs/*.jar $USER@$HOST:$TARGET_DIR
+          # JAR 파일이 있는지 확인
+          if [ -z "$LATEST_JAR" ]; then
+            echo "Error: No valid JAR file found!"
+            exit 1
+          fi
+
+          echo "Deploying $LATEST_JAR to EC2..."
+
+          # 빌드된 실행 가능 JAR만 EC2로 전송
+          scp -v -i private_key.pem -o StrictHostKeyChecking=no "$LATEST_JAR" $USER@$HOST:$TARGET_DIR
 
       - name: Run Application on EC2
         env:
@@ -64,7 +75,6 @@ jobs:
           TARGET_DIR: /home/ubuntu/cicd/
 
         run: |
-          
           echo "$PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
@@ -73,5 +83,3 @@ jobs:
             pkill -f 'java -jar' || echo "No existing app running"
             nohup java -jar $TARGET_DIR/*.jar > $TARGET_DIR/app.log 2>&1 &
           EOF
-
-
