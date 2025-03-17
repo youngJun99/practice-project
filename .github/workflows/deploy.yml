@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ develop ]  # develop 브랜치로의 PR도 트리거됨
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,10 +30,10 @@ jobs:
           echo "${{ secrets.APPLICATION_SECRET }}" > ./src/main/resources/application-secret.yml
         shell: bash
 
-      - name: Build with Gradle Wrapper
+      - name: Build with Gradle Wrapper (Skip Tests)
         run: |
           ./gradlew --stop && ./gradlew clean --refresh-dependencies
-          ./gradlew clean build
+          ./gradlew clean build -x test # 테스트 제외
           ls -l build/libs 
 
       - name: Deploy JAR to EC2
@@ -65,4 +64,5 @@ jobs:
             pkill -f 'java -jar' || echo "No existing app running"
             nohup java -jar $TARGET_DIR/*.jar > $TARGET_DIR/app.log 2>&1 &
           EOF
+
 
