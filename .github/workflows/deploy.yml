@@ -46,21 +46,9 @@ jobs:
           # SSH 키 저장 (줄바꿈 유지)
           printf "%s\n" "${{ secrets.EC2_SSH_KEY }}" > private_key.pem
           chmod 600 private_key.pem
-
-          # SSH 키 파일 정상 생성 여부 확인
-          ls -l private_key.pem
           
-          # SSH 연결 테스트 (EC2 접속 가능 여부 확인)
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST "echo 'SSH Connection Successful'"
-
           # 가장 최근 빌드된 실행 가능한 JAR 찾기
           LATEST_JAR=$(ls -t build/libs/*.jar | grep -v 'plain' | head -n 1)
-          
-          # JAR 파일이 있는지 확인
-          if [ -z "$LATEST_JAR" ]; then
-            echo "Error: No valid JAR file found!"
-            exit 1
-          fi
 
           echo "Deploying $LATEST_JAR to EC2..."
 
