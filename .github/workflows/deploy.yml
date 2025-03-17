@@ -36,6 +36,12 @@ jobs:
           ./gradlew clean build -x test # 테스트 제외
           ls -l build/libs 
 
+      - name: Test SCP with Small File
+        run: |
+         echo "Hello World" > test.txt
+         scp -v -i private_key.pem -o StrictHostKeyChecking=no test.txt $USER@$HOST:$TARGET_DIR
+
+
       - name: Deploy JAR to EC2
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
@@ -62,7 +68,9 @@ jobs:
           HOST: ${{ secrets.EC2_HOST }}
           USER: ubuntu
           TARGET_DIR: /home/ubuntu/cicd/
+
         run: |
+          
           echo "$PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
