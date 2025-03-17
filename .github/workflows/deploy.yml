@@ -36,12 +36,6 @@ jobs:
           ./gradlew clean build -x test # 테스트 제외
           ls -l build/libs 
 
-      - name: Test SCP with Small File
-        run: |
-         echo "Hello World" > test.txt
-         scp -v -i private_key.pem -o StrictHostKeyChecking=no test.txt $USER@$HOST:$TARGET_DIR
-
-
       - name: Deploy JAR to EC2
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
@@ -52,6 +46,9 @@ jobs:
           # SSH 키 저장 (줄바꿈 유지)
           printf "%s\n" "${{ secrets.EC2_SSH_KEY }}" > private_key.pem
           chmod 600 private_key.pem
+          
+          echo "Hello World" > test.txt
+          scp -v -i private_key.pem -o StrictHostKeyChecking=no test.txt $USER@$HOST:$TARGET_DIR
           
           # SSH 키 파일 정상 생성 여부 확인
           ls -l private_key.pem
