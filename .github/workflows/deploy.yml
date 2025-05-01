@@ -85,7 +85,6 @@ jobs:
           source: ./application-secret.yml
           target: /home/ubuntu/secret
 
-
       - name: Write docker-compose.yml from secret
         run: |
           echo "${{ secrets.DOCKER_COMPOSE }}" > docker-compose.yml
