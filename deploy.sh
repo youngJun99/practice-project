@@ -32,18 +32,17 @@ determine_target() {
 health_check() {
   local URL=$1
   local RETRIES=0
-  local ORIGINAL_TARGET=$TARGET  # 원래 TARGET 값을 저장
+  local ORIGINAL_TARGET=$TARGET
 
   while [ $RETRIES -lt $MAX_RETRIES ]; do
     echo "Checking service at $URL... (attempt: $((RETRIES + 1)))"
     sleep 3
 
-    # 현재 실행 중인 컨테이너 확인
     CONTAINER_RUNNING=$(docker ps --filter "name=app_$TARGET" --format '{{.Names}}')
 
     if [ "$CONTAINER_RUNNING" = "app_$TARGET" ]; then
       echo "$TARGET container is running."
-      return 0  # 컨테이너가 실행 중이라면 헬스체크 성공
+      return 0
     else
       echo "$TARGET container is not running."
     fi
@@ -51,18 +50,11 @@ health_check() {
     RETRIES=$((RETRIES + 1))
   done
 
-  # 헬스체크 실패 시 롤백 처리
   echo "Health check failed after $MAX_RETRIES attempts."
   echo "Rolling back to the original target: $ORIGINAL_TARGET"
-
-  # TARGET을 원래 값으로 롤백
   TARGET=$ORIGINAL_TARGET
   echo "Rolled back TARGET: $TARGET"
-
-  # 로그 파일에 실패 기록
   echo "Failed health check for $TARGET container" > /home/ubuntu/cicd/health_check_failure.log
-
-  # docker-compose down 대신 실패 기록 후 종료
   exit 1
 }
 
@@ -83,7 +75,6 @@ down_old_container() {
   if [ "$OLD" != "none" ]; then
     echo "Stopping old container: $OLD"
     sudo docker stop "app_$OLD"
-
   fi
 }
 
@@ -91,29 +82,21 @@ down_old_container() {
 main() {
   determine_target
 
-
-  # 대상 컨테이너 실행
   echo "Starting $TARGET container..."
-  docker-compose -f docker-compose.yml up -d "app_$TARGET"
+  docker-compose -p $APP_NAME -f docker-compose.yml up -d "app_$TARGET"
 
-  # 헬스체크
   if [ "$TARGET" = "blue" ]; then
     health_check "http://127.0.0.1:8080/actuator/health"
   else
     health_check "http://127.0.0.1:8081/actuator/health"
   fi
 
-  # NGINX 설정 스위칭
   switch_nginx_conf
-
-  # 이전 컨테이너 종료
   down_old_container
 
   echo "Deployment to $TARGET completed successfully!"
-
   echo "Cleaning up dangling Docker images..."
   docker image prune -f
 }
 
-# 스크립트 실행
 main
