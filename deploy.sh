@@ -113,7 +113,7 @@ main() {
 
   echo "Cleaning up dangling Docker images..."
   docker image prune -f
-
+}
 
 # 스크립트 실행
 main
