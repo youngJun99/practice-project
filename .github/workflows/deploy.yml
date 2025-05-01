@@ -127,6 +127,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/clokey-docker:1.0.0
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY_NAME }}:1.0.0
             sudo chmod +x /home/ubuntu/cicd/deploy.sh
             sudo /home/ubuntu/cicd/deploy.sh

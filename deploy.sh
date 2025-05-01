@@ -2,7 +2,7 @@
 
 cd /home/ubuntu/cicd
 
-APP_NAME="clokey"
+APP_NAME="practice"
 
 # NGINX 설정 관련
 NGINX_CONF_PATH="/etc/nginx"
