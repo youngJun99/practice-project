@@ -1,0 +1,34 @@
+# syntax=docker/dockerfile:1.4
+
+# 의존성 레이어
+FROM gradle:8.5-jdk17 AS dependencies
+WORKDIR /build
+
+COPY gradlew .
+COPY gradle/wrapper/gradle-wrapper.jar gradle/wrapper/
+COPY gradle/wrapper/gradle-wrapper.properties gradle/wrapper/
+COPY build.gradle settings.gradle ./
+
+RUN ./gradlew dependencies --no-daemon
+
+
+# 빌드 레이어
+FROM gradle:8.5-jdk17 AS builder
+WORKDIR /build
+
+COPY --from=dependencies /build /build
+COPY src src
+
+RUN ./gradlew build -x test --no-daemon
+
+# 최종 레이어
+FROM openjdk:17-jdk-slim
+
+ENV TZ=Asia/Seoul
+RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ >/etc/timezone
+
+WORKDIR /app
+
+COPY --from=builder /build/build/libs/*.jar app.jar
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
