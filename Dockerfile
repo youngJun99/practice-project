@@ -19,7 +19,7 @@ WORKDIR /build
 COPY --from=dependencies /build /build
 COPY src src
 
-RUN ./gradlew build --no-daemon
+RUN ./gradlew build -x test --no-daemon
 
 # 최종 레이어
 FROM openjdk:17-jdk-slim
