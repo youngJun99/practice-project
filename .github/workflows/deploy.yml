@@ -83,7 +83,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: ./temp_secret/application-secret.yml
-          target: /home/ubuntu/secret/
+          target: /home/ubuntu/secret/application-secret.yml
 
       - name: Write docker-compose.yml from secret
         run: |
