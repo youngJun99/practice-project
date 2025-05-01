@@ -74,8 +74,7 @@ jobs:
       - name: Create application-secret.yml from Secret
         run: |
           mkdir -p ./temp_secret
-          echo "${{ secrets.APPLICATION_SECRET }}" > ./temp_secret/application-secret.yml
-        shell: bash
+          printf '%s\n' "${{ secrets.APPLICATION_SECRET }}" > ./temp_secret/application-secret.yml
 
       - name: Copy application-secret.yml to remote
         uses: appleboy/scp-action@v0.1.3
