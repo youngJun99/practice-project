@@ -118,6 +118,7 @@ jobs:
           source: ./deploy.sh
           target: /home/ubuntu/cicd/
 
+
       - name: Deploy Blue-Green
         uses: appleboy/ssh-action@master
         with:
