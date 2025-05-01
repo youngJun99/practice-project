@@ -53,7 +53,6 @@ jobs:
         if: env.changed == 'true'
         run: |
           docker buildx build \
-            --builder mybuilder \
             --platform linux/amd64 \
             --push \
             --file Dockerfile \
@@ -64,7 +63,6 @@ jobs:
       - name: Build & Push Application Image
         run: |
           docker buildx build \
-            --builder mybuilder \
             --platform linux/amd64 \
             --push \
             --file Dockerfile \
