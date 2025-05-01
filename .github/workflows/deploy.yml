@@ -71,6 +71,7 @@ jobs:
             --cache-from type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY_NAME }}:dependency-cache \
             .
 
+
       - name: Create application-secret.yml from Secret
         run: |
           mkdir -p ./temp_secret
