@@ -74,8 +74,7 @@ jobs:
 
       - name: Create application-secret.yml from Secret
         run: |
-          mkdir -p ./temp_secret
-          printf '%s\n' "${{ secrets.APPLICATION_SECRET }}" > ./temp_secret/application-secret.yml
+          printf '%s\n' "${{ secrets.APPLICATION_SECRET }}" > ./application-secret.yml
 
       - name: Copy application-secret.yml to remote
         uses: appleboy/scp-action@v0.1.3
@@ -83,7 +82,7 @@ jobs:
           username: ubuntu
           host: ${{ secrets.EC2_HOST }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: ./temp_secret/application-secret.yml
+          source: ./application-secret.yml
           target: /home/ubuntu/secret/application-secret.yml
 
 
